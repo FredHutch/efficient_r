@@ -1,0 +1,106 @@
+---
+title: "Efficient R"
+author: Dan Tenenbaum
+date: October 10, 2016
+output: slidy_presentation
+---
+
+## Overview
+
+`R` provides many ways of doing the same things, and most of them are slow.
+
+(This is a corollary of a quote by Robert Gentleman,
+Hutch alum and co-creator of `R` (paraphrasing): "There are many efficient ways
+to achieve an incorrect result.")
+
+## Measuring speed of operations in R
+
+`system.time()` is the function used to determine how long something takes in
+`R`.
+
+```{r}
+system.time(1+1)
+```
+
+This operation takes *some* time, but such a small fraction it's not worth
+reporting.
+
+The last field, `elapsed` time, is the one we'll be most interested in here.
+
+## Vectors
+
+Vectors can store numbers:
+
+```{r}
+v <- 1
+```
+
+...or strings (in `R` they're called "character vectors"):
+
+```{r}
+v <- "Hello"
+```
+
+Vectors can store more than one item. This is done
+using the `c()` function (the `c` stands for "concatenate").
+
+```{r}
+v <- c(1,2,3)
+v <- c("Hello", "to", "you")
+```
+
+Really, vectors can store anything. But all items in a vector must be
+of the same type.
+
+## Vector Operations
+
+How do we perform an operation on every item in a vector?
+In many other languages, we'd have to loop through the vector and
+perform our operation on each item. In `R`, many operations
+are `vectorized`, meaning they're performed on every item in the vector
+at once.
+
+```{r}
+v <- c(1,2,3)
+v + 1 # add one to each item
+sum(v) # add the whole vector together
+sqrt(v) # calculate the square root of each item
+
+```
+
+Many functions in `R` are vectorized. Always try calling the function
+directly on your vector (as in the `sqrt()` example above). If that doesn't
+work, don't use a `for` loop; instead use `lapply` or one of `R`'s other
+`apply` functions. More on this later.
+
+## Creating Large Vectors
+
+When creating large vectors, it's always best to pre-allocate the vector
+(if you know the number of items you'll be putting in it), rather
+than appending to the end. When appending, R will make unnecessary copies
+of the vector in memory with each addition, making the operation slow
+as well as memory-intensive.
+
+```{r}
+# appending
+v <- c() # start with an empty vector
+system.time(for (i in 1:10000) v[[i]] <- i)
+```
+
+```{r}
+# preallocate and fill
+v <- integer(10000)
+system.time(for (i in 1:10000) v[[i]] <- i)
+```
+
+Pre-allocating is at least 10 times faster! The larger the vector,
+the more slower it is to append.
+
+Actually, in this case, there's an even faster way:
+
+```{r}
+system.time(v <- 1:10000) # 1:10000 is already a vector.
+```
+
+This reinforces one of our pieces of advice, which is to avoid using
+`for` loops as much as possible.
