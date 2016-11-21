@@ -5,7 +5,14 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: slidy_presentation
 ---
 
+
 ## Overview
+
+<!--
+  build me with:
+  R -e "rmarkdown::render('efficient_R.Rmd')"
+-->
+
 
 `R` provides many ways of doing the same things, and most of them are slow.
 (There are faster ways but you have to learn them.)
@@ -13,6 +20,22 @@ output: slidy_presentation
 (This is a corollary of a quote by Robert Gentleman,
 Hutch alum and co-creator of `R` (paraphrasing): "There are many efficient ways
 to achieve an incorrect result.")
+
+<div class="notes">
+R presentation -
+
+as short as 15-20 mins
+
+use the hutch way,
+module load (get help from john)
+'module load R' seems to work...what about RSTudio?
+
+R / RStudio
+
+Rprof
+
+which is the best profiler
+</div>
 
 ## Measuring speed of operations in R
 
