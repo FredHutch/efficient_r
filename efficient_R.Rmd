@@ -35,6 +35,12 @@ R / RStudio
 Rprof
 
 which is the best profiler
+https://csgillespie.github.io/efficientR/
+nice explanation of why for loops are bad
+byte-compilation
+Does microbenchmark give you more info than System.time for
+trivial stuff?
+caching/memoise?
 </div>
 
 ## Measuring speed of operations in R
