@@ -2,24 +2,30 @@
 title: "Efficient R"
 author: Dan Tenenbaum
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: slidy_presentation
+output:
+  slidy_presentation:
+    font_adjustment: -80
 ---
 
 
 ## Overview
 
 <!--
+  Prerequisites: rmarkdown
+  (microbenchmark is loaded automatically if needed)
+
   build me with:
   R -e "rmarkdown::render('efficient_R.Rmd')"
 -->
 
 
 `R` provides many ways of doing the same things, and most of them are slow.
-(There are faster ways but you have to learn them.)
 
 (This is a corollary of a quote by Robert Gentleman,
 Hutch alum and co-creator of `R` (paraphrasing): "There are many efficient ways
 to achieve an incorrect result.")
+
+There are faster ways to do things, but you have to learn them.
 
 <div class="notes">
 R presentation -
@@ -52,31 +58,48 @@ caching/memoise?
 system.time(1+1)
 ```
 
-This operation takes *some* time, but such a small fraction it's not worth
-reporting.
-
 The last field, `elapsed` time, is the one we'll be most interested in here.
+
+This operation takes *some* time, but such a small fraction that `system.time()`
+doesn't display it. For finer-grained timing, use the `microbenchmark`
+function and package:
+
+```{r echo=FALSE, results="hide"}
+suppressWarnings({
+  suppressMessages({
+  if (!require("microbenchmark")) # install if necessary:
+    install.packages("microbenchmark", repos="https://cloud.r-project.org")
+  })
+})
+```
+
+```{r}
+library(microbenchmark)
+microbenchmark(1+1)
+```
+
+The field to pay attention to here is the `median` field.
 
 ## Vectors
 
 Vectors can store numbers:
 
 ```{r}
-v <- 1
+v = 1
 ```
 
 ...or strings (in `R` they're called "character vectors"):
 
 ```{r}
-v <- "Hello"
+v = "Hello"
 ```
 
 Vectors can store more than one item. This is done
 using the `c()` function (the `c` stands for "concatenate").
 
 ```{r}
-v <- c(1,2,3)
-v <- c("Hello", "to", "you")
+v = c(1,2,3)
+v = c("Hello", "to", "you")
 ```
 
 Really, vectors can store anything. But all items in a vector must be
@@ -91,7 +114,7 @@ are `vectorized`, meaning they're performed on every item in the vector
 at once.
 
 ```{r}
-v <- c(1,2,3)
+v = c(1,2,3)
 v + 1 # add one to each item
 sum(v) # add the whole vector together
 sqrt(v) # calculate the square root of each item
@@ -103,6 +126,46 @@ directly on your vector (as in the `sqrt()` example above). If that doesn't
 work, don't use a `for` loop; instead use `lapply` or one of `R`'s other
 `apply` functions. More on this later.
 
+## Why are `for` loops bad?
+
+If you've worked with other languages, you are probably used to
+`for` loops, but i's a bad idea to use them in `R`.
+In general, `R` is slow. Many of `R`'s core functions are written in `C`
+or `FORTRAN`, fast compiled languages. The sooner you get to the underlying
+`C/FORTRAN` code (and the less time spent in `R`), the faster your code will
+be. An example: say you have a vector `x` of length `n`.
+
+```{r}
+n = 1000
+x = runif(n)
+```
+
+```{r eval=FALSE}
+x = x + 1
+```
+
+involves a single function call to the `+` function. Whereas the `for` loop
+
+```{r eval=FALSE}
+for (i in seq_len(n))
+  x[i] = x[i] + 1
+```
+
+has
+
+* `n` function calls to `+`;
+* `n` function calls to the `[` function;
+* `n` function calls to the `[<` function (used in the assignment operation)
+* A function call to `for` and to the `:` operator
+
+***
+
+### Timing
+
+```{r}
+microbenchmark(x = x + 1, for(i in seq_len(n)) x[i] = x[i] + 1)
+```
+
 ## Creating Large Vectors
 
 When creating large vectors, it's always best to pre-allocate the vector
@@ -113,14 +176,14 @@ as well as memory-intensive.
 
 ```{r}
 # appending
-v <- c() # start with an empty vector
-system.time(for (i in 1:10000) v[[i]] <- i)
+v = c() # start with an empty vector
+system.time(for (i in 1:10000) v[[i]] = i)
 ```
 
 ```{r}
 # preallocate and fill
-v <- integer(10000)
-system.time(for (i in 1:10000) v[[i]] <- i)
+v = integer(10000)
+system.time(for (i in 1:10000) v[[i]] = i)
 ```
 
 Pre-allocating is at least 10 times faster! The larger the vector,
@@ -129,16 +192,23 @@ the slower it is to append.
 Actually, in this case, there's an even faster way:
 
 ```{r}
-system.time(v <- 1:10000) # 1:10000 is already a vector.
+system.time({v = 1:10000}) # 1:10000 is already a vector.
 ```
 
 This reinforces one of our pieces of advice, which is to avoid using
 `for` loops as much as possible.
 
+## But my code is still slow!
+
+You've tried everything in this presentation and your code is still slow.
+
+...profiling...
+
 ## Acknowledgements
 
 Content stolen from:
 
-* Martin Morgan
-* `The R Inferno`, by Patrick Burns
+* Martin Morgan (various tutorials from the [Bioconductor](https://bioconductor.org) site).
+* [The R Inferno](http://www.burns-stat.com/pages/Tutor/R_inferno.pdf), by Patrick Burns
+* [Efficient R Programming](https://csgillespie.github.io/efficientR/) by Colin Gillespie and Robin Lovelace
 * ...
