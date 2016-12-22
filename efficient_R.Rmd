@@ -16,6 +16,27 @@ output:
 
   build me with:
   R -e "rmarkdown::render('efficient_R.Rmd')"
+
+I'm committed to discussing the following topics (this is
+the official talk description):
+
+https://www.eventbrite.com/e/brownbag-efficient-r-tickets-30505447615
+
+Efficient R
+
+R has a reputation as a slow language, which is somewhat undeserved. However, there are a lot of ways you can end up writing slow code if you are not careful.
+
+We'll talk about:
+
+* The best way to work with vectors
+* Why "for" loops are slow, and what are the alternatives
+* Measuring the speed of code execution
+* Profiling code
+* Speeding up code with compilation, caching, and parallelization
+
+Audience: Researchers who use R, from beginners to advanced users.
+
+The talk will be on 1/19/2017 at Noon in M4-A805/A817
 -->
 
 
@@ -47,7 +68,26 @@ byte-compilation
 Does microbenchmark give you more info than System.time for
 trivial stuff?
 caching/memoise?
+
+factors?
+
 </div>
+
+## Using R the Hutch Way
+
+* In the browser:
+
+[http://rstudio.fhcrc.org/](http://rstudio.fhcrc.org/)
+
+Log in with your HutchNet ID and password.
+
+* In a terminal window:
+
+```
+ssh rhino # (provide your HutchNet password if prompted)
+module load R
+R
+```
 
 ## Measuring speed of operations in R
 
@@ -126,46 +166,6 @@ directly on your vector (as in the `sqrt()` example above). If that doesn't
 work, don't use a `for` loop; instead use `lapply` or one of `R`'s other
 `apply` functions. More on this later.
 
-## Why are `for` loops bad?
-
-If you've worked with other languages, you are probably used to
-`for` loops, but i's a bad idea to use them in `R`.
-In general, `R` is slow. Many of `R`'s core functions are written in `C`
-or `FORTRAN`, fast compiled languages. The sooner you get to the underlying
-`C/FORTRAN` code (and the less time spent in `R`), the faster your code will
-be. An example: say you have a vector `x` of length `n`.
-
-```{r}
-n = 1000
-x = runif(n)
-```
-
-```{r eval=FALSE}
-x = x + 1
-```
-
-involves a single function call to the `+` function. Whereas the `for` loop
-
-```{r eval=FALSE}
-for (i in seq_len(n))
-  x[i] = x[i] + 1
-```
-
-has
-
-* `n` function calls to `+`;
-* `n` function calls to the `[` function;
-* `n` function calls to the `[<` function (used in the assignment operation)
-* A function call to `for` and to the `:` operator
-
-***
-
-### Timing
-
-```{r}
-microbenchmark(x = x + 1, for(i in seq_len(n)) x[i] = x[i] + 1)
-```
-
 ## Creating Large Vectors
 
 When creating large vectors, it's always best to pre-allocate the vector
@@ -197,6 +197,50 @@ system.time({v = 1:10000}) # 1:10000 is already a vector.
 
 This reinforces one of our pieces of advice, which is to avoid using
 `for` loops as much as possible.
+
+
+
+## Why are `for` loops bad?
+
+If you've worked with other languages, you are probably used to
+`for` loops, but it's a bad idea to use them in `R`.
+<!-- In general, `R` is slow. Many of `R`'s core functions are written in `C`
+or `FORTRAN`, fast compiled languages. The sooner you get to the underlying
+`C/FORTRAN` code (and the less time spent in `R`), the faster your code will
+be. --> An example: say you have a vector `x` of length `n`.
+
+```{r}
+n = 1000
+x = runif(n)
+```
+
+```{r eval=FALSE}
+x = x + 1
+```
+
+involves a single function call to the `+` function. Whereas the `for` loop
+
+```{r eval=FALSE}
+for (i in seq_len(n))
+  x[i] = x[i] + 1
+```
+
+has
+
+* `n` function calls to `+`;
+* `n` function calls to the `[` function;
+* `n` function calls to the `[<` function (used in the assignment operation)
+* A function call to `for` and to the `:` operator
+
+***
+
+
+### Timing
+
+```{r}
+microbenchmark(x = x + 1, for(i in seq_len(n)) x[i] = x[i] + 1)
+```
+
 
 ## But my code is still slow!
 
