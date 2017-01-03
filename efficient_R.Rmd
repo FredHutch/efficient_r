@@ -11,7 +11,7 @@ output:
 ## Overview
 
 <!--
-  Prerequisites: rmarkdown
+  Prerequisites: rmarkdown, profvis, ggplot2movies
   (microbenchmark is loaded automatically if needed)
 
   build me with:
@@ -101,7 +101,7 @@ system.time(1+1)
 The last field, `elapsed` time, is the one we'll be most interested in here.
 
 This operation takes *some* time, but such a small fraction that `system.time()`
-doesn't display it. For finer-grained timing, use the `microbenchmark`
+doesn't display it. For finer-grained timing, we'll use the `microbenchmark`
 function and package:
 
 ```{r echo=FALSE, results="hide"}
@@ -143,7 +143,8 @@ v = c("Hello", "to", "you")
 ```
 
 Really, vectors can store anything. But all items in a vector must be
-of the same type.
+of the same type. (Try creating a vector of numbers and strings to
+see what happens.)
 
 ## Vector Operations
 
@@ -175,7 +176,7 @@ of the vector in memory with each addition, making the operation slow
 as well as memory-intensive.
 
 ```{r}
-# appending
+# appending (bad)
 v = c() # start with an empty vector
 system.time(for (i in 1:10000) v[[i]] = i)
 ```
@@ -235,18 +236,188 @@ has
 ***
 
 
-### Timing
+## For loops, continued
 
 ```{r}
 microbenchmark(x = x + 1, for(i in seq_len(n)) x[i] = x[i] + 1)
 ```
 
+## Apply functions
 
-## But my code is still slow!
+`for` loops are not just bad because they are slow, but because they
+can make code harder to read. Consider the following snippets. Let's
+create some random data (a list consisting of variable-length
+vectors of random numbers):
+
+```{r}
+l <- replicate(20, runif(sample(1:10, 1)), simplify = FALSE)
+```
+
+To find the length of each vector in the list, you could write a `for`
+loop:
+
+```{r}
+f <- function() {
+  out <- vector("list", length(l))
+  for (i in seq_along(l)) {
+    out[[i]] <- length(l[[i]])
+  }
+  unlist(out)
+}
+f()
+```
+
+***
+
+## Apply functions, continued (2)
+
+Or you could use `lapply()`:
+
+```{r}
+unlist(lapply(l, length))
+```
+
+Once you understand that this is *applying* the function `length()` to
+each element of the list `l`, the `lapply()` code is much more concise
+and intuitive.
+
+It's also faster:
+
+```{r}
+microbenchmark(f(), unlist(lapply(l, length)))
+```
+
+***
+
+## Apply functions, continued (3)
+
+There are a number of different apply functions for working with
+different types of data:
+
+ Function | Description
+----------| ------------
+`apply` | Apply functions over array margins
+`by` |  apply a function to a data frame split by factors
+`eapply` | apply a function over values in an environment
+`lapply` | apply a function over a list or vector
+`mapply` | apply a function to multiple list or vector arguments
+`rapply` | recursively apply a function to a list
+`tapply` | Apply a function over a ragged array
+
+For more information on each function, see its manual page.
+
+Remember that many functions in `R` are already vectorized,
+as we saw with `sqrt()` earlier,
+so you may not need to use these `apply` functions.
+
+There are also `parallel` versions of some of these functions,
+discussed next.
+
+## Parallel Apply functions
+
+TODO:
+
+* start with socket clusters; mention these *could* run on
+  different hosts
+* find a good example
+* task must be parallelizable
+
+
+
+
+## Code Profiling
 
 You've tried everything in this presentation and your code is still slow.
+You can use code profiling to find bottlenecks in your code.
+Here's some contrived code that looks at a dataset of movies, pulls out
+the comedies, plotting the year vs. the movie rating and draws a local
+polynomial regression to show the trend. It's wrapped inside a call to
+`profvis()` (from the `profvis` package) which will pull up a web page
+that will show us where time is spent in the code.
 
-...profiling...
+```{r eval=FALSE}
+library("profvis")
+profvis({
+  data(movies, package = "ggplot2movies") # Load data
+  movies = movies[movies$Comedy == 1,]
+  plot(movies$year, movies$rating)
+  model = loess(rating ~ year, data = movies) # loess regression line
+  j = order(movies$year)
+  lines(movies$year[j], model$fitted[j]) # Add line to the plot
+})
+```
+
+(There is a built-in function called `Rprof()` but it's more difficult
+to use and not as accurate.)
+
+See the results on the next page.
+
+***
+
+## Profiling results
+
+![](profvis.jpg)
+
+The actual page you get back is interactive and you can click on
+individual lines to drill down deeper into the call stack.
+In this case we see that most time is spent in the `loess` function
+from the built-in `stats` package, and we don't have control of
+that to speed it up, but at least we can see where the bottleneck is.
+<div class="notes">
+Be sure to have the profvis() screen already up...
+</div>
+
+## Byte compilation
+
+The built-in `compliler` package compiles `R` code to bytecode
+which *can* run much faster. Here's an inefficient `mean()` function
+(don't use this for any real work, use `R`'s built-in `mean()` function).
+
+```{r}
+mean_r = function(x) {
+  m = 0
+  n = length(x)
+  for(i in seq_len(n))
+    m = m + x[i] / n
+  m
+}
+```
+
+Let's make a version of it that's compiled to bytecode:
+
+```{r}
+library("compiler")
+cmp_mean_r = cmpfun(mean_r)
+```
+
+***
+
+## Byte compilation, continued
+
+Let's compare the performance of the two functions, along with
+`R`'s built-in `mean()` function:
+
+```{r}
+x = rnorm(1000)
+microbenchmark(times = 10, unit = "ms", # milliseconds
+          mean_r(x), cmp_mean_r(x), mean(x))
+```
+
+The compiled version is quite a bit faster than our custom `R` code,
+but `R`'s built-in `mean` function is much faster still, since it's
+implemented in `C`.
+
+You can byte-compile an entire package, not just a function, just add
+the line
+
+    ByteCompile: true
+
+to the package's `DESCRIPTION` file.
+
+## Caching
+
+TODO: discuss memoise
+
 
 ## Acknowledgements
 
@@ -255,4 +426,9 @@ Content stolen from:
 * Martin Morgan (various tutorials from the [Bioconductor](https://bioconductor.org) site).
 * [The R Inferno](http://www.burns-stat.com/pages/Tutor/R_inferno.pdf), by Patrick Burns
 * [Efficient R Programming](https://csgillespie.github.io/efficientR/) by Colin Gillespie and Robin Lovelace
-* ...
+* [Advanced `R`](http://adv-r.had.co.nz/) by Hadley Wickham
+
+
+These slides are available at:
+
+[https://github.com/FredHutch/efficient_r](https://github.com/FredHutch/efficient_r)
