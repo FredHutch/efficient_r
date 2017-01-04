@@ -1,0 +1,11 @@
+Package: efficient.r
+Description: Presentation on Efficient R,
+  FHCRC, January 19th, 2017.
+License: GPL-3
+Suggests: knitr, rmarkdown, microbenchmark, profvis,
+  ggplot2movies
+VignetteBuilder: knitr
+Title: Efficient R
+Author: Dan Tenenbaum
+Maintainer: Dan Tenenbaum <dtenenba@fredhutch.org>
+Version: 0.99.0

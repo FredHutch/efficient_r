@@ -5,8 +5,10 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
   slidy_presentation:
     font_adjustment: -80
+vignette: >
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{Efficient R}
 ---
-
 
 ## Overview
 
