@@ -14,6 +14,9 @@ install.packages(c("rmarkdown", "profvis", "ggplot2movies",
 "microbenchmark"),repos="https://cloud.r-project.org/")
 library("rmarkdown")
 render('efficient_R.Rmd')
+# to make an R script from the Rmd file:
+library("knitr")
+purl("efficient_R.Rmd")
 q('no')
 ```
 
