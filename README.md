@@ -1,24 +1,7 @@
-# How to build this presentation
+# Efficient R
 
-```
-# clone this repository
-git clone https://github.com/FredHutch/efficient_r.git
-cd efficient_r
-```
+A presentation to be given at Fred Hutch, January 19, 2017.
 
-Now start R and within R, do the following:
+To see this as a slide deck, click [here](https://s3.amazonaws.com/scicomp-brownbag/efficient_R.html).
 
-
-```{r}
-install.packages(c("rmarkdown", "profvis", "ggplot2movies",
-"microbenchmark"),repos="https://cloud.r-project.org/")
-library("rmarkdown")
-render('efficient_R.Rmd')
-# to make an R script from the Rmd file:
-library("knitr")
-purl("efficient_R.Rmd")
-q('no')
-```
-
-This generates the file `efficient_R.html` which you can now
-open in a web browser.
+For just the R code in the slides, click [here](https://s3.amazonaws.com/scicomp-brownbag/efficient_R.R).
