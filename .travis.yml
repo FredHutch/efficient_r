@@ -6,7 +6,7 @@ deploy:
   provider: s3
   acl: public_read
   bucket: scicomp-brownbag
-  region: us-west-2
+  #region: us-west-2
   local_dir: /tmp/efficient.r/inst/doc
   access_key_id:
     secure: DVNPphj5Yi4GGmSMDgKMk4u02V932n0dPzP/o7DbcH4KO9zOBeqUQOXduv8fL/pEFPupCvYjeueLK1bJO1FoHk80vqqe4v0CYUWclNek3+CW1CFSXYtZp0GIpiYhphalUEX3PHgcfuqGliyJL25FXQdvOpegR6JoBhrrEVw3rwEBh5ZwOYatOyeOVyAlpmxIZM1WXnFwFHmQ8cmnBIqlPKL0nnHO+2Ur5vU1cWElbXlbIUktdP6m2DLdw0ibRaUcMOyi7e16ZRqx95WmWz4F0RjVonuUygmZGiWs9ctx/TcJ0NOsBTJRwWgy4PGESI/b/V2yq+KxZe4DKeOsiEhqzcEHh6dkH3617bjoSxg16LHnp6gsIykwn/OiTSyPZnX/IvfvhEtprWF1lAJpUG9JxpXC8004nAxfOp6Pg2V67F4VHSo9/vgAK8syw3ChQpq/y6Mo+47iZkxcbKBsC3945Xd5FLqbBDPFW5UlYf10VqBm2n7xrP1P+EhzY8spiiro5j802X51itNM/CrBCkekI8oO4ZPwk+a0lX+w7AsHGAh/c2x8NBT0CalEN5q0J0/G6g12SxlaXEDJB0rLnsCa/vpKAUzeRHrqZEpHSel4cc3aoShuepESrEeRJoTWkZYgL5KH+/5OgqobV13QS339jslQfT1zjjY4J1gGr1n829E=
