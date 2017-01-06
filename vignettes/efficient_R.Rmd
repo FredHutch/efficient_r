@@ -116,7 +116,7 @@ suppressWarnings({
 ```
 
 ```{r}
-library(microbenchmark)
+library("microbenchmark")
 microbenchmark(1+1)
 ```
 
@@ -317,6 +317,78 @@ discussed next.
 
 ## Parallel Apply functions
 
+If a computation can be split apart--if successive iterations of a loop
+don't depend on the result of the previous iteration, for example,
+then it is *parallelizable*. The simplest kind of parallelization
+is *forking*, which is not available on Windows (where the computation
+is run serially). Here's an example. First, let's find the number of cores:
+
+```{r}
+library("parallel")
+detectCores()
+```
+For each core, let's sleep for one second. In a non-parallelized
+setting we'd expect this to take `detectCores()` seconds:
+
+```{r}
+system.time(mclapply(rep(1, detectCores()), Sys.sleep, mc.cores=detectCores()))
+```
+
+With `mclapply()` it takes just a hair over one second to run a
+one-second computation on each core.
+
+## Parallel Apply functions, continued (2)
+
+If you're on Windows or you want to utilize multiple machines, you need
+to use `socket clusters`, the other kind of parallelization, also from
+the `parallel` package. It's a little more work because you have to set
+up and tear down your cluster before and after usage. Instead of
+`mclapply()` you call `parLapply()` which takes your cluster as its first
+argument:
+
+```{r create_cluster}
+cl <- makeCluster(detectCores())
+system.time(parLapply(cl, rep(1, detectCores()), Sys.sleep))
+```
+
+It's important to stop the cluster when you're not using it anymore:
+
+```{r stopcluster}
+stopCluster(cl)
+```
+
+## Parallel Apply functions, continued (3)
+
+There's another important difference between the two kinds of parallelization.
+With `forking` each parallel computation can 'see' all variables that exist
+in your `R` process, but with `socket clusters` they cannot:
+
+```{r vardemo}
+x <- 'hello from a parallel universe'
+mclapply(rep(1, detectCores()), function(i) x, mc.cores=detectCores())
+```
+
+```{r whoops, error=TRUE}
+cl <- makeCluster(detectCores())
+parLapply(cl, rep(1, detectCores()), function(i) x)
+```
+
+You have to explicitly export any variables you want to refer to before
+this will work:
+
+```{r exportvars}
+clusterExport(cl, "x")
+parLapply(cl, rep(1, detectCores()), function(i) x)
+```
+
+And finally we have to clean up:
+
+```{r cleanup2}
+stopCluster(cl)
+```
+
+
+<div class="notes">
 TODO:
 
 * start with socket clusters; mention these *could* run on
@@ -324,7 +396,7 @@ TODO:
 * find a good example
 * task must be parallelizable
 
-
+</div>
 
 
 ## Code Profiling
@@ -349,7 +421,7 @@ profvis({
 })
 ```
 
-(There is a built-in function called `Rprof()` but it's more difficult
+(There is a built-in profiling function called `Rprof()` but it's more difficult
 to use and not as accurate.)
 
 See the results on the next page.
@@ -418,7 +490,58 @@ to the package's `DESCRIPTION` file.
 
 ## Caching
 
-TODO: discuss memoise
+There are two kinds of caching. The first is simply avoiding unnecessary
+or redundant calculations. Say we want to normalize each column of a matrix.
+We use the standard deviation of the whole matrix:
+
+```{r caching_no_reuse}
+x = matrix(runif(10*10), 10, 10)
+result = apply(x, 2, function(i) mean(i) / sd(x))
+```
+This is inefficient since `sd()` is run inside each iteration of the `apply()`
+function. If we calculate the standard deviation a single time, outside
+`apply()`, it is much faster.
+
+```{r cache_sd}
+sd_x = sd(x)
+result = apply(x, 2, function(i) mean(i) / sd_x)
+```
+And indeed, it's faster:
+
+```{r compare_sd}
+microbenchmark(apply(x, 2, function(i) mean(i) / sd(x)),
+    apply(x, 2, function(i) mean(i) / sd_x))
+```
+## Caching, continued
+
+The other kind of caching is to use the `memoise` package which
+creates a wrapper around potentially slow functions and stores
+the results of each function call. If you call the wrapped function
+twice with the same arguments, you'll get back a cached result the second
+time. Here's a contrived example using `Sys.sleep()` to simulate
+an expensive calculation.
+
+```{r memoise}
+f <- function(input) {
+  Sys.sleep(1)
+  input
+}
+
+library("memoise")
+fast_f <- memoise(f)
+system.time(fast_f(1))
+```
+The second run should be faster:
+
+```{r memoise2}
+system.time(fast_f(1))
+
+```
+
+
+Note that using `memoise` represents
+a tradeoff between speed and memory usage, since cached results
+are stored in memory.
 
 
 ## Acknowledgements

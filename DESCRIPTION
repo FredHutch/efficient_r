@@ -3,7 +3,7 @@ Description: Presentation on Efficient R,
   FHCRC, January 19th, 2017.
 License: GPL-3
 Suggests: knitr, rmarkdown, microbenchmark, profvis,
-  ggplot2movies
+  ggplot2movies, memoise
 VignetteBuilder: knitr
 Title: Efficient R
 Author: Dan Tenenbaum
