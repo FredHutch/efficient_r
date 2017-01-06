@@ -2,6 +2,7 @@ language: r
 cache: packages
 sudo: false
 before_deploy: "./before_deploy.sh"
+r_check_args: "--no-vignettes"
 deploy:
   provider: s3
   acl: public_read
