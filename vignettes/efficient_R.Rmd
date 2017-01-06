@@ -365,12 +365,12 @@ in your `R` process, but with `socket clusters` they cannot:
 
 ```{r vardemo}
 x <- 'hello from a parallel universe'
-mclapply(rep(1, detectCores()), function(i) x, mc.cores=detectCores())
+head(mclapply(rep(1, detectCores()), function(i) x, mc.cores=detectCores()))
 ```
 
 ```{r whoops, error=TRUE}
 cl <- makeCluster(detectCores())
-parLapply(cl, rep(1, detectCores()), function(i) x)
+head(parLapply(cl, rep(1, detectCores()), function(i) x))
 ```
 
 You have to explicitly export any variables you want to refer to before
@@ -378,7 +378,7 @@ this will work:
 
 ```{r exportvars}
 clusterExport(cl, "x")
-parLapply(cl, rep(1, detectCores()), function(i) x)
+head(parLapply(cl, rep(1, detectCores()), function(i) x))
 ```
 
 And finally we have to clean up:
