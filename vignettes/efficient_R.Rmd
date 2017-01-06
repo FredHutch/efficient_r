@@ -235,7 +235,7 @@ has
 * `n` function calls to the `[<` function (used in the assignment operation)
 * A function call to `for` and to the `:` operator
 
-***
+
 
 
 ## For loops, continued
@@ -269,7 +269,7 @@ f <- function() {
 f()
 ```
 
-***
+
 
 ## Apply functions, continued (2)
 
@@ -289,7 +289,7 @@ It's also faster:
 microbenchmark(f(), unlist(lapply(l, length)))
 ```
 
-***
+
 
 ## Apply functions, continued (3)
 
@@ -426,7 +426,7 @@ to use and not as accurate.)
 
 See the results on the next page.
 
-***
+
 
 ## Profiling results
 
@@ -464,7 +464,7 @@ library("compiler")
 cmp_mean_r = cmpfun(mean_r)
 ```
 
-***
+
 
 ## Byte compilation, continued
 
