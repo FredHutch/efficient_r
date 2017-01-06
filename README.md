@@ -1,3 +1,5 @@
+![](https://travis-ci.org/FredHutch/efficient_r.svg?branch=master)
+
 # Efficient R
 
 A presentation to be given at Fred Hutch, January 19, 2017.
