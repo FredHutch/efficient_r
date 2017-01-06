@@ -1,4 +1,4 @@
-![](https://travis-ci.org/FredHutch/efficient_r.svg?branch=master)
+[![Build Status](https://travis-ci.org/FredHutch/efficient_r.svg?branch=master)](https://travis-ci.org/FredHutch/efficient_r)
 
 # Efficient R
 
